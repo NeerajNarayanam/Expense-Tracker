@@ -2,6 +2,14 @@ import { useEffect, useState } from "react";
 
 import toast from "react-hot-toast";
 
+import {
+  FaArrowTrendUp,
+  FaWallet,
+  FaBolt,
+} from "react-icons/fa6";
+
+import { motion } from "framer-motion";
+
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 import BalanceCard from "../components/BalanceCard";
@@ -9,65 +17,87 @@ import ExpenseForm from "../components/ExpenseForm";
 import IncomeForm from "../components/IncomeForm";
 import ExpenseList from "../components/ExpenseList";
 import Analytics from "../components/Analytics";
-import SearchFilter from "../components/SearchFilter";
 import BudgetTracker from "../components/BudgetTracker";
 
 import API from "../services/api";
 
+import {
+  exportCSV,
+  exportPDF,
+} from "../utils/exportUtils";
+
 function Dashboard() {
 
-  // Dark Mode
-  const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem("theme") === "dark";
-  });
+  // SIDEBAR
+  const [sidebarOpen,
+    setSidebarOpen] =
+      useState(false);
 
-  // Expenses
-  const [expenses, setExpenses] = useState([]);
+  // DARK MODE
+  const [darkMode,
+    setDarkMode] =
+      useState(() => {
 
-  // Income
-  const [income, setIncome] = useState([]);
+        return (
+          localStorage.getItem(
+            "theme"
+          ) === "dark"
+        );
+      });
 
-  // Search & Filter
-  const [searchTerm, setSearchTerm] = useState("");
+  // EXPENSES
+  const [expenses,
+    setExpenses] =
+      useState([]);
 
-  const [selectedCategory, setSelectedCategory] =
-    useState("All");
+  // INCOME
+  const [income,
+    setIncome] =
+      useState([]);
 
   // FETCH EXPENSES
-  const fetchExpenses = async () => {
+  const fetchExpenses =
+    async () => {
 
-    try {
+      try {
 
-      const response = await API.get(
-        "/expenses"
-      );
+        const response =
+          await API.get(
+            "/expenses"
+          );
 
-      setExpenses(response.data);
+        setExpenses(
+          response.data
+        );
 
-    } catch (error) {
+      } catch (error) {
 
-      console.log(error);
+        console.log(error);
 
-    }
-  };
+      }
+    };
 
   // FETCH INCOME
-  const fetchIncome = async () => {
+  const fetchIncome =
+    async () => {
 
-    try {
+      try {
 
-      const response = await API.get(
-        "/income"
-      );
+        const response =
+          await API.get(
+            "/income"
+          );
 
-      setIncome(response.data);
+        setIncome(
+          response.data
+        );
 
-    } catch (error) {
+      } catch (error) {
 
-      console.log(error);
+        console.log(error);
 
-    }
-  };
+      }
+    };
 
   // LOAD DATA
   useEffect(() => {
@@ -79,160 +109,473 @@ function Dashboard() {
   }, []);
 
   // ADD EXPENSE
-  const addExpense = async (expense) => {
+  const addExpense =
+    async (expense) => {
 
-    try {
+      try {
 
-      await API.post(
-        "/expenses",
-        expense
-      );
+        await API.post(
+          "/expenses",
+          expense
+        );
 
-      fetchExpenses();
+        fetchExpenses();
 
-      toast.success("Expense Added");
+        toast.success(
+          "Expense Added"
+        );
 
-    } catch (error) {
+      } catch (error) {
 
-      console.log(error);
+        console.log(error);
 
-    }
-  };
+      }
+    };
 
   // ADD INCOME
-  const addIncome = async (newIncome) => {
+  const addIncome =
+    async (newIncome) => {
 
-    try {
+      try {
 
-      await API.post(
-        "/income",
-        newIncome
-      );
+        await API.post(
+          "/income",
+          newIncome
+        );
 
-      fetchIncome();
+        fetchIncome();
 
-      toast.success("Income Added");
+        toast.success(
+          "Income Added"
+        );
 
-    } catch (error) {
+      } catch (error) {
 
-      console.log(error);
+        console.log(error);
 
-    }
-  };
+      }
+    };
 
   // DELETE EXPENSE
-  const deleteExpense = async (
-    expenseId
-  ) => {
+  const deleteExpense =
+    async (expenseId) => {
 
-    try {
+      try {
 
-      await API.delete(
-        `/expenses/${expenseId}`
-      );
+        await API.delete(
+          `/expenses/${expenseId}`
+        );
 
-      fetchExpenses();
+        fetchExpenses();
 
-      toast.error("Expense Deleted");
+        toast.error(
+          "Expense Deleted"
+        );
 
-    } catch (error) {
+      } catch (error) {
 
-      console.log(error);
+        console.log(error);
 
-    }
-  };
+      }
+    };
+
+  // UPDATE EXPENSE
+  const updateExpense =
+    async (
+      expenseId,
+      updatedExpense
+    ) => {
+
+      try {
+
+        await API.put(
+          `/expenses/${expenseId}`,
+          updatedExpense
+        );
+
+        fetchExpenses();
+
+        toast.success(
+          "Expense Updated"
+        );
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+    };
 
   // SAVE THEME
   useEffect(() => {
 
     localStorage.setItem(
       "theme",
-      darkMode ? "dark" : "light"
+      darkMode
+        ? "dark"
+        : "light"
     );
 
   }, [darkMode]);
 
-  // TOTALS
-  const totalExpense = expenses.reduce(
-    (total, item) =>
-      total + Number(item.amount),
-    0
-  );
+  // TOTAL EXPENSE
+  const totalExpense =
+    expenses.reduce(
+      (total, item) =>
+        total +
+        Number(item.amount),
+      0
+    );
 
-  const totalIncome = income.reduce(
-    (total, item) =>
-      total + Number(item.amount),
-    0
-  );
+  // TOTAL INCOME
+  const totalIncome =
+    income.reduce(
+      (total, item) =>
+        total +
+        Number(item.amount),
+      0
+    );
 
+  // BALANCE
   const totalBalance =
-    totalIncome - totalExpense;
+    totalIncome -
+    totalExpense;
 
-  // FILTERED EXPENSES
-  const filteredExpenses =
-    expenses.filter((expense) => {
+  // CATEGORY TOTALS
+  const categoryTotals = {};
 
-      const matchesSearch =
-        (expense.title || "")
-          .toLowerCase()
-          .includes(
-            searchTerm.toLowerCase()
-          );
+  expenses.forEach(
+    (expense) => {
 
-      const matchesCategory =
-        selectedCategory === "All" ||
-        (expense.category || "") ===
-          selectedCategory;
+      categoryTotals[
+        expense.category
+      ] =
+        (categoryTotals[
+          expense.category
+        ] || 0) +
+        Number(
+          expense.amount
+        );
+    }
+  );
 
-      return (
-        matchesSearch &&
-        matchesCategory
-      );
-    });
+  const topCategory =
+    Object.keys(
+      categoryTotals
+    ).sort(
+      (a, b) =>
+        categoryTotals[b] -
+        categoryTotals[a]
+    )[0] || "None";
 
   return (
     <div
       className={`
         flex min-h-screen
+        overflow-hidden
+        relative
+
         ${
           darkMode
-            ? "bg-gray-900 text-white"
-            : "bg-gradient-to-br from-gray-100 to-gray-200"
+            ? `
+              bg-gradient-to-br
+              from-[#020617]
+              via-[#0f172a]
+              to-[#111827]
+              text-white
+            `
+            : `
+              bg-gradient-to-br
+              from-slate-100
+              via-blue-50
+              to-cyan-50
+              text-black
+            `
         }
       `}
     >
 
-      {/* Sidebar */}
-      <Sidebar darkMode={darkMode} />
+      {/* BACKGROUND GLOWS */}
+      <div className="
+        absolute top-0 left-0
+        w-[500px] h-[500px]
+        bg-cyan-500/10
+        blur-[120px]
+        rounded-full
+      " />
 
-      {/* Main Content */}
-      <div className="flex-1 p-6">
+      <div className="
+        absolute bottom-0 right-0
+        w-[500px] h-[500px]
+        bg-purple-500/10
+        blur-[120px]
+        rounded-full
+      " />
 
-        {/* Topbar */}
+      {/* SIDEBAR */}
+      <Sidebar
+        darkMode={darkMode}
+        sidebarOpen={
+          sidebarOpen
+        }
+        setSidebarOpen={
+          setSidebarOpen
+        }
+      />
+
+      {/* MAIN */}
+      <div className="
+        flex-1 p-4 md:p-8
+        overflow-y-auto
+        relative z-10
+      ">
+
+        {/* TOPBAR */}
         <Topbar
           darkMode={darkMode}
-          setDarkMode={setDarkMode}
-        />
-
-        {/* Search */}
-        <SearchFilter
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={
-            setSelectedCategory
+          setDarkMode={
+            setDarkMode
           }
-          darkMode={darkMode}
+          setSidebarOpen={
+            setSidebarOpen
+          }
         />
 
-        {/* Balance Cards */}
-        <div
-          className="
-            grid grid-cols-1
-            md:grid-cols-3
-            gap-6 mt-6
-          "
+        {/* HERO */}
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 40,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          className={`
+            rounded-[2.5rem]
+            p-6 md:p-8
+            border
+            backdrop-blur-2xl
+            shadow-2xl
+            mb-10
+
+            ${
+              darkMode
+                ? `
+                  bg-white/5
+                  border-white/10
+                `
+                : `
+                  bg-white/80
+                  border-gray-200
+                `
+            }
+          `}
         >
+
+          <div className="
+            flex flex-col
+            xl:flex-row
+            justify-between
+            gap-10
+          ">
+
+            {/* LEFT */}
+            <div>
+
+              <p className="
+                uppercase tracking-[0.3rem]
+                text-cyan-400
+                font-semibold
+              ">
+                Financial Overview
+              </p>
+
+              <h1 className="
+                text-4xl md:text-6xl
+                font-black mt-4
+              ">
+                ₹{totalBalance}
+              </h1>
+
+              <p className="
+                text-gray-400
+                text-lg mt-4
+                max-w-2xl
+              ">
+                Your smart financial
+                ecosystem is performing
+                efficiently this month.
+              </p>
+
+              {/* EXPORT BUTTONS */}
+              <div className="
+                flex flex-wrap gap-4 mt-8
+              ">
+
+                {/* PDF */}
+                <button
+                  onClick={() =>
+                    exportPDF(
+                      expenses,
+                      income,
+                      totalIncome,
+                      totalExpense,
+                      totalBalance
+                    )
+                  }
+                  className="
+                    px-6 py-4 rounded-2xl
+                    bg-gradient-to-r
+                    from-cyan-500
+                    to-blue-500
+                    text-white font-semibold
+                    shadow-xl
+                    hover:scale-105
+                    transition
+                  "
+                >
+                  Export PDF
+                </button>
+
+                {/* CSV */}
+                <button
+                  onClick={() =>
+                    exportCSV(
+                      expenses,
+                      income
+                    )
+                  }
+                  className="
+                    px-6 py-4 rounded-2xl
+                    bg-gradient-to-r
+                    from-emerald-500
+                    to-green-500
+                    text-white font-semibold
+                    shadow-xl
+                    hover:scale-105
+                    transition
+                  "
+                >
+                  Export CSV
+                </button>
+
+              </div>
+
+            </div>
+
+            {/* STATS */}
+            <div className="
+              grid grid-cols-1
+              md:grid-cols-3
+              gap-6 flex-1
+            ">
+
+              {/* GROWTH */}
+              <div className="
+                rounded-3xl p-6
+                bg-gradient-to-br
+                from-cyan-500/20
+                to-blue-500/20
+                border border-cyan-500/20
+              ">
+
+                <FaArrowTrendUp
+                  className="
+                    text-4xl
+                    text-cyan-400
+                  "
+                />
+
+                <h2 className="
+                  text-3xl font-black
+                  mt-6
+                ">
+                  +18%
+                </h2>
+
+                <p className="
+                  text-gray-400 mt-2
+                ">
+                  Monthly Growth
+                </p>
+
+              </div>
+
+              {/* TRANSACTIONS */}
+              <div className="
+                rounded-3xl p-6
+                bg-gradient-to-br
+                from-emerald-500/20
+                to-green-500/20
+                border border-green-500/20
+              ">
+
+                <FaWallet
+                  className="
+                    text-4xl
+                    text-green-400
+                  "
+                />
+
+                <h2 className="
+                  text-3xl font-black
+                  mt-6
+                ">
+                  {expenses.length}
+                </h2>
+
+                <p className="
+                  text-gray-400 mt-2
+                ">
+                  Transactions
+                </p>
+
+              </div>
+
+              {/* TOP CATEGORY */}
+              <div className="
+                rounded-3xl p-6
+                bg-gradient-to-br
+                from-purple-500/20
+                to-pink-500/20
+                border border-purple-500/20
+              ">
+
+                <FaBolt
+                  className="
+                    text-4xl
+                    text-purple-400
+                  "
+                />
+
+                <h2 className="
+                  text-3xl font-black
+                  mt-6
+                ">
+                  {topCategory}
+                </h2>
+
+                <p className="
+                  text-gray-400 mt-2
+                ">
+                  Top Category
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </motion.div>
+
+        {/* BALANCE CARDS */}
+        <div className="
+          grid grid-cols-1
+          md:grid-cols-3
+          gap-8
+        ">
 
           <BalanceCard
             title="Balance"
@@ -254,15 +597,12 @@ function Dashboard() {
 
         </div>
 
-        {/* Forms & Transactions */}
-        <div
-          className="
-            grid grid-cols-1
-            xl:grid-cols-3
-            gap-6 mt-8
-            items-start
-          "
-        >
+        {/* FORMS + LIST */}
+        <div className="
+          grid grid-cols-1
+          xl:grid-cols-3
+          gap-8 mt-10
+        ">
 
           <ExpenseForm
             addExpense={addExpense}
@@ -275,17 +615,22 @@ function Dashboard() {
           />
 
           <ExpenseList
-            expenses={filteredExpenses}
+            expenses={expenses}
             deleteExpense={
               deleteExpense
+            }
+            updateExpense={
+              updateExpense
             }
             darkMode={darkMode}
           />
 
         </div>
 
-        {/* Analytics */}
-        <div className="mt-8">
+        {/* ANALYTICS */}
+        <div className="
+          mt-12
+        ">
 
           <Analytics
             expenses={expenses}
@@ -294,8 +639,10 @@ function Dashboard() {
 
         </div>
 
-        {/* Budget Tracker */}
-        <div className="mt-8">
+        {/* BUDGET TRACKER */}
+        <div className="
+          mt-12
+        ">
 
           <BudgetTracker
             totalExpense={

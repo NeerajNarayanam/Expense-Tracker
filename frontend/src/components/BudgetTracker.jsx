@@ -1,98 +1,99 @@
-import { useState } from "react";
-
 function BudgetTracker({
   totalExpense,
   darkMode,
 }) {
 
-  const [budget, setBudget] = useState(50000);
-
-  const remaining = budget - totalExpense;
+  const budget = 50000;
 
   const percentage =
-    totalExpense > 0
-      ? (totalExpense / budget) * 100
-      : 0;
+    (totalExpense / budget) * 100;
 
   return (
     <div
       className={`
-        p-6 rounded-3xl shadow
+        rounded-[2rem]
+        p-8
+        border
+        backdrop-blur-2xl
+        shadow-2xl
         ${
           darkMode
-            ? "bg-gray-800 text-white"
-            : "bg-white"
+            ? `
+              bg-white/5
+              border-white/10
+            `
+            : `
+              bg-white/80
+              border-gray-200
+            `
         }
       `}
     >
 
-      <h2 className="text-2xl font-bold mb-6">
-        Budget Tracker
-      </h2>
+      <div className="
+        flex justify-between
+        items-center mb-6
+      ">
 
-      {/* Budget Input */}
-      <input
-        type="number"
-        value={budget}
-        onChange={(e) =>
-          setBudget(Number(e.target.value))
-        }
-        className="w-full border p-3 rounded-xl mb-4 text-black"
-      />
+        <div>
 
-      {/* Budget Details */}
-      <div className="space-y-3">
+          <h1 className="
+            text-3xl font-black
+          ">
+            Budget Tracker
+          </h1>
 
-        <div className="flex justify-between">
-          <span>Total Budget</span>
-          <span>₹{budget}</span>
+          <p className="
+            text-gray-400 mt-2
+          ">
+            Monitor your spending limit
+          </p>
+
         </div>
 
-        <div className="flex justify-between">
-          <span>Spent</span>
-          <span className="text-red-500">
-            ₹{totalExpense}
-          </span>
-        </div>
-
-        <div className="flex justify-between">
-          <span>Remaining</span>
-          <span className="text-green-500">
-            ₹{remaining}
-          </span>
-        </div>
+        <h2 className="
+          text-2xl font-black
+        ">
+          ₹{budget}
+        </h2>
 
       </div>
 
-      {/* Progress Bar */}
-      <div className="mt-6">
+      {/* PROGRESS */}
+      <div className="
+        w-full h-5 rounded-full
+        bg-white/10 overflow-hidden
+      ">
 
-        <div className="w-full bg-gray-300 rounded-full h-4 overflow-hidden">
-
-          <div
-            className={`
-              h-full rounded-full
-              ${
-                percentage > 80
-                  ? "bg-red-500"
-                  : "bg-green-500"
-              }
-            `}
-            style={{
-              width: `${Math.min(percentage, 100)}%`,
-            }}
-          ></div>
-
-        </div>
+        <div
+          style={{
+            width: `${percentage}%`,
+          }}
+          className="
+            h-full rounded-full
+            bg-gradient-to-r
+            from-cyan-500
+            via-blue-500
+            to-indigo-600
+          "
+        />
 
       </div>
 
-      {/* Warning */}
-      {percentage > 80 && (
-        <p className="text-red-500 mt-4 font-semibold">
-          Warning: Budget almost exceeded!
+      <div className="
+        flex justify-between
+        mt-5 text-sm
+      ">
+
+        <p className="text-gray-400">
+          Spent: ₹{totalExpense}
         </p>
-      )}
+
+        <p className="text-cyan-400">
+          {percentage.toFixed(1)}%
+        </p>
+
+      </div>
 
     </div>
   );
