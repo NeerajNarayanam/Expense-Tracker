@@ -1,28 +1,42 @@
 from fastapi import APIRouter, HTTPException
-from passlib.context import CryptContext
-from jose import jwt
+from pydantic import BaseModel
 
 from database import user_collection
-from models.user_model import User
+
+from passlib.context import CryptContext
+
+from jose import jwt
+
+SECRET_KEY = "mysecretkey"
 
 router = APIRouter()
-
-SECRET_KEY = "expense_secret_key"
 
 pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto"
 )
 
+# USER MODEL
+class User(BaseModel):
+    username: str
+    email: str
+    password: str
+
+# LOGIN MODEL
+class LoginData(BaseModel):
+    email: str
+    password: str
+
 # REGISTER
 @router.post("/register")
-def register(user: User):
+async def register(user: User):
 
-    existing_user = user_collection.find_one({
+    existing_user = await user_collection.find_one({
         "email": user.email
     })
 
     if existing_user:
+
         raise HTTPException(
             status_code=400,
             detail="User already exists"
@@ -32,49 +46,50 @@ def register(user: User):
         user.password
     )
 
-    user_dict = {
+    user_data = {
         "username": user.username,
         "email": user.email,
         "password": hashed_password
     }
 
-    user_collection.insert_one(user_dict)
+    await user_collection.insert_one(
+        user_data
+    )
 
     return {
-        "message": "User Registered Successfully"
+        "message": "User registered successfully"
     }
 
 # LOGIN
 @router.post("/login")
-def login(data: dict):
+async def login(data: LoginData):
 
-    email = data.get("email")
-    password = data.get("password")
-
-    existing_user = user_collection.find_one({
-        "email": email
+    user = await user_collection.find_one({
+        "email": data.email
     })
 
-    if not existing_user:
+    if not user:
+
         raise HTTPException(
             status_code=400,
-            detail="Invalid Email"
+            detail="Invalid email"
         )
 
-    password_correct = pwd_context.verify(
-        password,
-        existing_user["password"]
+    valid_password = pwd_context.verify(
+        data.password,
+        user["password"]
     )
 
-    if not password_correct:
+    if not valid_password:
+
         raise HTTPException(
             status_code=400,
-            detail="Invalid Password"
+            detail="Invalid password"
         )
 
     token = jwt.encode(
         {
-            "email": existing_user["email"]
+            "email": user["email"]
         },
         SECRET_KEY,
         algorithm="HS256"
@@ -82,5 +97,5 @@ def login(data: dict):
 
     return {
         "token": token,
-        "username": existing_user["username"]
+        "username": user["username"]
     }
