@@ -15,20 +15,17 @@ from routers.income import (
 
 app = FastAPI()
 
-# CORS CONFIGURATION
+# CORS
 app.add_middleware(
     CORSMiddleware,
 
     allow_origins=[
 
-        # LOCAL DEVELOPMENT
+        # LOCALHOST
         "http://localhost:5173",
 
-        # OLD VERCEL DOMAIN
-        "https://expense-tracker-sigma-coral-41.vercel.app",
-
-        # CURRENT VERCEL DOMAIN
-        "https://expense-tracker-eight-eta-85.vercel.app",
+        # CURRENT VERCEL FRONTEND
+        "https://expense-tracker-mauve.vercel.app",
     ],
 
     allow_credentials=True,
@@ -39,19 +36,13 @@ app.add_middleware(
 )
 
 # ROUTES
-app.include_router(
-    auth_router
-)
+app.include_router(auth_router)
 
-app.include_router(
-    expense_router
-)
+app.include_router(expense_router)
 
-app.include_router(
-    income_router
-)
+app.include_router(income_router)
 
-# HOME ROUTE
+# HOME
 @app.get("/")
 def home():
 
