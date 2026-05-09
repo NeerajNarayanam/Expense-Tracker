@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from passlib.context import CryptContext
 from jose import jwt
 
-from database.connection import users_collection
+from database import user_collection
 from models.user_model import User
 
 router = APIRouter()
@@ -18,7 +18,7 @@ pwd_context = CryptContext(
 @router.post("/register")
 def register(user: User):
 
-    existing_user = users_collection.find_one({
+    existing_user = user_collection.find_one({
         "email": user.email
     })
 
@@ -38,7 +38,7 @@ def register(user: User):
         "password": hashed_password
     }
 
-    users_collection.insert_one(user_dict)
+    user_collection.insert_one(user_dict)
 
     return {
         "message": "User Registered Successfully"
@@ -51,7 +51,7 @@ def login(data: dict):
     email = data.get("email")
     password = data.get("password")
 
-    existing_user = users_collection.find_one({
+    existing_user = user_collection.find_one({
         "email": email
     })
 
